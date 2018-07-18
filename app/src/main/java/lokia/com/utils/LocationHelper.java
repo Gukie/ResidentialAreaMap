@@ -3,6 +3,7 @@ package lokia.com.utils;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -24,16 +25,17 @@ public class LocationHelper {
 
     private LocationHelper() {
         locationClient = new LocationClient(BaseApplication.mContext);
-        locationClient.registerLocationListener(new BDLocationListener() {
+        locationClient.registerLocationListener(new BDAbstractLocationListener(){
+
             @Override
-            public void onReceiveLocation(BDLocation arg0) {
-                String address = arg0.getAddrStr();
+            public void onReceiveLocation(BDLocation bdLocation) {
+                String address = bdLocation.getAddrStr();
                 if (!TextUtils.isEmpty(address)) {
-                    latitude = arg0.getLatitude();
-                    longitude = arg0.getLongitude();
+                    latitude = bdLocation.getLatitude();
+                    longitude = bdLocation.getLongitude();
                     mAddress = address;
-                    city = arg0.getCity();
-                    cityCode = arg0.getCityCode();
+                    city = bdLocation.getCity();
+                    cityCode = bdLocation.getCityCode();
                     isLocation = true;
                 }
                 Log.i("LocationHeleper", "latitude :" + latitude);

@@ -10,10 +10,15 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.baidu.location.BDAbstractLocationListener;
+import com.baidu.location.BDLocation;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
@@ -24,7 +29,9 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.model.inner.GeoPoint;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.GeoCoder;
@@ -44,20 +51,21 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
     private MarkerOptions mMarkerOptions;
     private Button latLongBtn = null;
     private LocationManager locationManager;
-    private static final int INITIAL_REQUEST=1337;
-    private static final int CAMERA_REQUEST=INITIAL_REQUEST+1;
-    private static final int CONTACTS_REQUEST=INITIAL_REQUEST+2;
-    private static final int LOCATION_REQUEST=INITIAL_REQUEST+3;
+    private static final int INITIAL_REQUEST = 1337;
+    private static final int CAMERA_REQUEST = INITIAL_REQUEST + 1;
+    private static final int CONTACTS_REQUEST = INITIAL_REQUEST + 2;
+    private static final int LOCATION_REQUEST = INITIAL_REQUEST + 3;
+
+
+    private LocationClient locationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         SDKInitializer.initialize(getApplicationContext());
-
         setContentView(R.layout.activity_guide_main);
         latLongBtn = findViewById(R.id.latlongBtn);
-//        LocationHelper.getInstance().starLocation();
 
 
         mMapView = (MapView) findViewById(R.id.bmapview);
@@ -65,6 +73,7 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
         mBaiduMap = mMapView.getMap();
         // 开启定位图层
         mBaiduMap.setMyLocationEnabled(true);
+        initLocationClient();
         initLocation();
 //        MarkerOptions mMarkerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_map));
 //        mMarkerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker));
@@ -77,20 +86,18 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
 //        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
 
 //        mBaiduMap.setMyLocationData();
-//        mBaiduMap.setOnMapLoadedCallback(new BaiduMap.OnMapLoadedCallback() {
-//            @Override
-//            public void onMapLoaded() {
-////                double lat = LocationHelper.getInstance().getLatitude();
-////                double lng = LocationHelper.getInstance().getLongitude();
-////
-////                String msg = lat+","+lng;
-////                ToastUtils.showText(msg);
-////                LatLng latLng = new LatLng(mLatitude,mLongitude);
-////
-////                loadMap(latLng);
+        mBaiduMap.setOnMapLoadedCallback(new BaiduMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+//                double lat = LocationHelper.getInstance().getLatitude();
+//                double lng = LocationHelper.getInstance().getLongitude();
 //
-//            }
-//        });
+//                String msg = lat+","+lng;
+//                ToastUtils.showText(msg);
+                LatLng latLng = new LatLng(mLatitude, mLongitude);
+                loadMap(latLng);
+            }
+        });
 
         mBaiduMap.setOnMapStatusChangeListener(new BaiduMap.OnMapStatusChangeListener() {
 
@@ -106,14 +113,16 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
 
             @Override
             public void onMapStatusChangeFinish(MapStatus arg0) {
-                LocationHelper.getInstance().setMapStatus(arg0);
+//                LocationHelper.getInstance().setMapStatus(arg0);
 //				arg0.target.latitude  // 纬度
 //				arg0.target.longitude // 经度
 //                latlngToAddress(arg0.target);
 //                loadMap(arg0.target);
 //                LatLng latLng = new LatLng(mLatitude,mLongitude);
-
 //                loadMap(arg0.target);
+
+//                LatLng latLng = new LatLng(mLatitude,mLongitude);
+//                loadMap(latLng);
             }
 
             @Override
@@ -122,13 +131,43 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
             }
         });
 
-//        findViewById(R.id.iv_control_map_back).setOnClickListener(this);
-//        LocationHelper.getInstance().starLocation();
+        locationClient.start();
+    }
 
+    private void initLocationClient() {
+        locationClient = new LocationClient(getApplicationContext());
+        locationClient.registerLocationListener(new BDAbstractLocationListener(){
+
+            @Override
+            public void onReceiveLocation(BDLocation location) {
+//                loadMap(new LatLng(location.getLatitude(),location.getLongitude()));
+
+//                mMapController.setCenter(new GeoPoint((int)(bdLocation.getLatitude()* 1e6), (int)(bdLocation.getLongitude() *  1e6)));
+//                mMapView.refreshDrawableState();
+//                MapStatus mapStatus = new MapStatus.Builder()
+//                        .target(new LatLng(location.getLatitude(),location.getLongitude()))
+//                        .build();
+//                mBaiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(mapStatus));
+//                //为这个地点增加标注
+//                //定义Maker坐标点
+//                LatLng point = new LatLng(location.getLatitude(), location.getLongitude());//纬度,经度
+//                //构建Marker图标
+//                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.icon_marker);
+//                //构建MarkerOption设置参数，用于在地图上添加Marker(标志)
+//                OverlayOptions option = new MarkerOptions()
+//                        .position(point)  //设置参数
+//                        .icon(bitmap);//设置图片
+//                //在地图上添加Marker(标注)，并显示
+//                mBaiduMap.addOverlay(option);
+//                //可以在这里进行关闭定位
+//                locationClient.stop();
+            }
+        });
+        initLocationOption();
     }
 
     private void initLocation() {
-
+//
 //        mLatitude = LocationHelper.getInstance().getLatitude();
 //        mLongitude = LocationHelper.getInstance().getLongitude();
 
@@ -146,37 +185,45 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
 //        Location location = locationManager.getLastKnownLocation(provider);
 //
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             Log.d("BaiduMapActivity", "fetchLocation: permisstion denied");
             latLongBtn.setText("fetchLocation: permisstion denied");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},LOCATION_REQUEST);
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST);
             }
-//            return;
         }
         Location location = locationManager.getLastKnownLocation(provider);
-        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
-//        mLatitude = location.getLatitude();
-//        mLongitude = location.getLongitude();
-
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         loadMap(latLng);
+        mLongitude = location.getLongitude();
+        mLatitude = location.getLatitude();
 
     }
 
-    private void loadMap(LatLng lanlng) {
 
+
+    private void initLocationOption(){
+        LocationClientOption option = new LocationClientOption();
+        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy
+        );//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+        option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
+        int span=1000;//1秒定位一次
+        option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
+        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
+        option.setOpenGps(true);//可选，默认false,设置是否使用gps
+        option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
+        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
+        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
+        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
+        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
+        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
+        locationClient.setLocOption(option);
+    }
+    private void loadMap(LatLng lanlng) {
 
 
 // 构造定位数据
         MyLocationData locData = new MyLocationData.Builder()
                 .accuracy(Criteria.ACCURACY_COARSE)
-                // 此处设置开发者获取到的方向信息，顺时针0-360
                 .direction(0).latitude(lanlng.latitude)
                 .longitude(lanlng.longitude).build();
 
@@ -190,38 +237,12 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
         MyLocationConfiguration config = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, mCurrentMarker);
         mBaiduMap.setMyLocationConfiguration(config);
 
-        String msg = lanlng.latitude+","+lanlng.longitude;
+        String msg = lanlng.latitude + "," + lanlng.longitude;
         latLongBtn.setText(msg);
 
     }
 
-    // 百度地图通过坐标获取地址，（ 要签名打包才能得到地址）
-    private void latlngToAddress(LatLng latlng) {
-        GeoCoder geoCoder = GeoCoder.newInstance();
-        // 设置反地理经纬度坐标,请求位置时,需要一个经纬度
-        geoCoder.reverseGeoCode(new ReverseGeoCodeOption().location(latlng));
 
-        // 设置地址或经纬度反编译后的监听,这里有两个回调方法
-        geoCoder.setOnGetGeoCodeResultListener(new OnGetGeoCoderResultListener() {
-
-            @Override
-            public void onGetReverseGeoCodeResult(ReverseGeoCodeResult result) {
-                if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {
-                    ToastUtils.showText("找不到该地址!");
-                } else {
-                    ToastUtils.showText(result.getAddress());
-                }
-            }
-
-            @Override
-            public void onGetGeoCodeResult(GeoCodeResult result) {
-                // 详细地址转换在经纬度
-                ToastUtils.showText(result.getAddress());
-
-            }
-        });
-
-    }
 
     protected void onResume() {
         super.onResume();
@@ -250,6 +271,15 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
 //                break;
         }
 
+    }
+
+    /**
+     * 单击事件,开始定位,如果不关闭,会一直刷新定位信息(在服务中执行的)
+     * 开发者定位场景如果是单次定位的场景，在收到定位结果之后直接调用stop函数即可。
+     * 如果stop之后仍然想进行定位，可以再次start等待定位结果回调即可。
+     */
+    public void onStartLocation(View view){
+        locationClient.start();
     }
 
 }
