@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ResidentialAreaMap</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="baidu_maps_key">IFw00zd03c8eYva43zH3zfHyQbYFUQjx</string>
+</resources>
