@@ -75,26 +75,11 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
         mBaiduMap.setMyLocationEnabled(true);
         initLocationClient();
         initLocation();
-//        MarkerOptions mMarkerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_map));
-//        mMarkerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker));
-//        final LatLng ll = new LatLng(Double.valueOf(mLatitude), Double.valueOf(mLongitude));
-//        mMarkerOptions.position(ll);
-//        mBaiduMap.addOverlay(mMarkerOptions);
-//
-//        MapStatus.Builder builder = new MapStatus.Builder();
-//        builder.target(ll).zoom(18.0f);
-//        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-
-//        mBaiduMap.setMyLocationData();
         mBaiduMap.setOnMapLoadedCallback(new BaiduMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-//                double lat = LocationHelper.getInstance().getLatitude();
-//                double lng = LocationHelper.getInstance().getLongitude();
-//
-//                String msg = lat+","+lng;
-//                ToastUtils.showText(msg);
                 LatLng latLng = new LatLng(mLatitude, mLongitude);
+                Log.d("location", "onMapLoaded: <"+mLatitude+","+mLongitude+">");
                 loadMap(latLng);
             }
         });
@@ -132,6 +117,7 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
         });
 
         locationClient.start();
+        locationClient.requestLocation();
     }
 
     private void initLocationClient() {
@@ -140,43 +126,19 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
 
             @Override
             public void onReceiveLocation(BDLocation location) {
-//                loadMap(new LatLng(location.getLatitude(),location.getLongitude()));
-
-//                mMapController.setCenter(new GeoPoint((int)(bdLocation.getLatitude()* 1e6), (int)(bdLocation.getLongitude() *  1e6)));
-//                mMapView.refreshDrawableState();
-//                MapStatus mapStatus = new MapStatus.Builder()
-//                        .target(new LatLng(location.getLatitude(),location.getLongitude()))
-//                        .build();
-//                mBaiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(mapStatus));
-//                //为这个地点增加标注
-//                //定义Maker坐标点
-//                LatLng point = new LatLng(location.getLatitude(), location.getLongitude());//纬度,经度
-//                //构建Marker图标
-//                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.icon_marker);
-//                //构建MarkerOption设置参数，用于在地图上添加Marker(标志)
-//                OverlayOptions option = new MarkerOptions()
-//                        .position(point)  //设置参数
-//                        .icon(bitmap);//设置图片
-//                //在地图上添加Marker(标注)，并显示
-//                mBaiduMap.addOverlay(option);
-//                //可以在这里进行关闭定位
-//                locationClient.stop();
+                Log.d("onMapLoaded", "onMapLoaded: <"+location.getLatitude()+","+location.getLongitude()+">");
+                loadMap(new LatLng(location.getLatitude(),location.getLongitude()));
             }
         });
         initLocationOption();
     }
 
     private void initLocation() {
-//
-//        mLatitude = LocationHelper.getInstance().getLatitude();
-//        mLongitude = LocationHelper.getInstance().getLongitude();
-
-
         String serviceName = Context.LOCATION_SERVICE;
         locationManager = (LocationManager) getSystemService(serviceName);
         String provider = LocationManager.GPS_PROVIDER;
         Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
         criteria.setAltitudeRequired(false);
         criteria.setBearingRequired(false);
         criteria.setCostAllowed(true);
@@ -192,30 +154,31 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
             }
         }
         Location location = locationManager.getLastKnownLocation(provider);
+        if(location == null){
+            return;
+        }
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         loadMap(latLng);
         mLongitude = location.getLongitude();
         mLatitude = location.getLatitude();
+        Log.d("location", "initLocation: lat:"+mLatitude+", longtitude:"+mLongitude);
 
     }
 
-
-
     private void initLocationOption(){
         LocationClientOption option = new LocationClientOption();
-        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy
-        );//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
         option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
-        int span=1000;//1秒定位一次
+        int span=1001;//1秒定位一次
         option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
         option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
         option.setOpenGps(true);//可选，默认false,设置是否使用gps
         option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
         option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
         option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
-        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
-        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
+        option.setEnableSimulateGps(true);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
+        option.setOpenAutoNotifyMode();
+
         locationClient.setLocOption(option);
     }
     private void loadMap(LatLng lanlng) {
@@ -223,7 +186,7 @@ public class BaiduMapActivity2 extends Activity implements View.OnClickListener 
 
 // 构造定位数据
         MyLocationData locData = new MyLocationData.Builder()
-                .accuracy(Criteria.ACCURACY_COARSE)
+                .accuracy(Criteria.ACCURACY_HIGH)
                 .direction(0).latitude(lanlng.latitude)
                 .longitude(lanlng.longitude).build();
 
